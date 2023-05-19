@@ -1,0 +1,218 @@
+import random
+import math
+import turtle
+from queue import PriorityQueue
+
+
+# maze size
+length = 10
+width = 10
+
+# the probability of the obstacle
+obstacle_prob = 0.3
+
+# Create the maze using array 
+maze = [[0 for x in range(width)] for y in range(length)]
+
+# Define a function to generate the maze
+def generate_maze():
+    for i in range(length):
+        for j in range(width):
+            if random.random() < obstacle_prob:
+                maze[i][j] = 1
+
+# Generate the maze with obstacles
+generate_maze()
+
+# Define the start and goal cells
+start_x, start_y = random.randint(0, width-1), random.randint(0, length-1)
+goal_x, goal_y = random.randint(0, width-1), random.randint(0, length-1)
+
+while maze[start_y][start_x] == 1 or maze[goal_y][goal_x] == 1 or (start_x, start_y) == (goal_x, goal_y):
+    start_x, start_y = random.randint(0, width-1), random.randint(0, length-1)
+    goal_x, goal_y = random.randint(0, width-1), random.randint(0, length-1)
+
+# Define a function to print the maze
+def print_maze():
+    for i in range(length):
+        for j in range(width):
+            if maze[i][j] == 1:
+                print(" # ", end="")
+            elif i == start_y and j == start_x:
+                print(" S ", end="")
+            elif i == goal_y and j == goal_x:
+                print(" G ", end="")
+            else:
+                print(" . ", end="")
+        print()
+
+# Define a function to calculate the cost of moving from one cell to another
+def cost(x1, y1, x2, y2):
+    if x1 == x2 or y1 == y2:
+        return 1
+    else:
+        return math.sqrt(2)
+
+# Define a function to calculate the straight-line distance between two cells
+def euclidean_distance(x1, y1, x2, y2):
+    return math.sqrt((x1 - x2)**2 + (y1 - y2)**2)
+
+# Define a function to find the shortest path from the start to the goal using the A* algorithm
+def find_path():
+    # Create a priority queue to store the cells to be explored
+    open_set = PriorityQueue()
+
+    # Add the start cell to the open set with a priority of 0
+    open_set.put((0, start_x, start_y))
+
+    # Create dictionaries to store the cost and parent of each cell
+    g_score = {(i, j): float("inf") for j in range(width) for i in range(length)}
+    g_score[(start_x, start_y)] = 0
+    parent = {(i, j): None for j in range(width) for i in range(length)}
+
+    # Initialize the counter for the number of expanded nodes
+    expanded_nodes = 0
+
+    # Explore the cells in the open set until the goal is reached or the open set is empty
+    while not open_set.empty():
+        # Get the cell with the lowest priority from the open set
+        current = open_set.get()[1:]
+
+        # Increment the counter for the number of expanded nodes
+        expanded_nodes += 1
+
+        # Check if the current cell is the goal
+        if current == (goal_x, goal_y):
+            # Reconstruct the path from the goal to the start
+            path = []
+            while current != (start_x, start_y):
+                path.append(current)
+                current = parent[current]
+            path.append(current)
+            path.reverse()
+            return path, expanded_nodes
+
+        # Explore the neighbors of the current cell
+        for dx in [-1, 0, 1]:
+            for dy in [-1, 0, 1]:
+                if dx == 0 and dy == 0:
+                    continue
+                x = current[0] + dx
+                y = current[1] + dy
+                if x < 0 or x >= width or y < 0 or y >= length:
+                    continue
+                if maze[y][x] == 1:
+                    continue
+                new_g_score = g_score[current] + cost(current[0], current[1], x, y)
+                if new_g_score < g_score[(x, y)]:
+                    g_score[(x, y)] = new_g_score
+                    h_score = euclidean_distance(x, y, goal_x, goal_y)
+                    f_score = new_g_score + h_score
+                    open_set.put((f_score, x, y))
+                    parent[(x, y)] = current
+
+    # If the open set is empty and the goal has not been reached, there is no path
+    return None, expanded_nodes
+
+# Define a function to print the path from the start to the goal
+def print_path(path, expanded_nodes):
+    current = path[0]
+    g_score = 0
+    for i in range(1, len(path)):
+        next = path[i]
+        move_cost = cost(current[0], current[1], next[0], next[1])
+        g_score += move_cost
+        h_score = euclidean_distance(next[0], next[1], goal_x, goal_y)
+        print(f"Move {i} from {current} to {next} with cost {move_cost:.2f} and heuristic {h_score:.2f}")
+        current = next
+
+    print("\nThe shortest path has a cost of:", g_score)
+    print("The number of expanded nodes is:", expanded_nodes)
+
+# Define the main function
+def main():
+    # Print the maze
+    print("Maze:")
+    print_maze()
+
+    # Find the shortest path from the start to the goal
+    path, expanded_nodes = find_path()
+
+    # If a path is found, print it and display the cost and the number of expanded nodes
+    if path is not None:
+        print("\nShortest path:")
+        print_path(path, expanded_nodes)
+    else:
+        print("\nThere is no path from the start to the goal.")
+
+# Call the main function
+main()
+def draw_maze():
+    screen = turtle.Screen()
+    screen.title("Maze")
+    screen.setup(600, 600)
+
+    turtle.speed(0)
+    turtle.hideturtle()
+    turtle.penup()
+    turtle.goto(-250, 250)
+    turtle.pendown()
+    turtle.pensize(2)
+
+    for i in range(length):
+        for j in range(width):
+            if maze[i][j] == 1:
+                turtle.fillcolor("black")
+            elif i == start_y and j == start_x:
+                turtle.fillcolor("yellow")
+            elif i == goal_y and j == goal_x:
+                turtle.fillcolor("green")
+            else:
+                turtle.fillcolor("white")
+
+            turtle.begin_fill()
+            for _ in range(4):
+                turtle.forward(50)
+                turtle.right(90)
+            turtle.end_fill()
+
+            turtle.penup()
+            turtle.forward(50)
+            turtle.pendown()
+
+        turtle.penup()
+        turtle.goto(-250, turtle.ycor() - 50)
+        turtle.pendown()
+
+    turtle.hideturtle()
+
+# Define a function to draw the path
+def draw_path(path):
+    turtle.penup()
+    turtle.goto(-225 + (start_x * 50), 225 - (start_y * 50))
+    turtle.pendown()
+    turtle.pensize(2)
+    turtle.color("blue")
+
+    for i in range(1, len(path)):
+        x1, y1 = path[i-1]
+        x2, y2 = path[i]
+        turtle.goto(-225 + (x2 * 50), 225 - (y2 * 50))
+
+    turtle.penup()
+
+# Call the draw_maze function to visualize the maze
+draw_maze()
+
+# Find the shortest path from the start to the goal
+path, _ = find_path()
+
+# If a path is found, draw it
+if path is not None:
+    draw_path(path)
+
+# Hide the turtle cursor
+turtle.hideturtle()
+
+# Keep the window open
+turtle.done()
