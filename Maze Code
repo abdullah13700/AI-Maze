@@ -9,9 +9,9 @@ length = 10
 width = 10
 
 # the probability of the obstacle
-obstacle_prob = 0.3
+obstacle_prob = 0.1
 
-# Create the maze using array 
+# Create the maze using array
 maze = [[0 for x in range(width)] for y in range(length)]
 
 # Define a function to generate the maze
@@ -37,9 +37,9 @@ def print_maze():
     for i in range(length):
         for j in range(width):
             if maze[i][j] == 1:
-                print(" # ", end="")
+                print(" # ", end ="")
             elif i == start_y and j == start_x:
-                print(" S ", end="")
+                print(" S ", end ="")
             elif i == goal_y and j == goal_x:
                 print(" G ", end="")
             else:
@@ -152,19 +152,19 @@ def draw_maze():
     screen.title("Maze")
     screen.setup(600, 600)
 
-    turtle.speed(0)
+    turtle.speed("fastest")
     turtle.hideturtle()
     turtle.penup()
     turtle.goto(-250, 250)
     turtle.pendown()
-    turtle.pensize(2)
+    turtle.pensize(4)
 
     for i in range(length):
         for j in range(width):
             if maze[i][j] == 1:
                 turtle.fillcolor("black")
             elif i == start_y and j == start_x:
-                turtle.fillcolor("yellow")
+                turtle.fillcolor("red")
             elif i == goal_y and j == goal_x:
                 turtle.fillcolor("green")
             else:
@@ -191,8 +191,9 @@ def draw_path(path):
     turtle.penup()
     turtle.goto(-225 + (start_x * 50), 225 - (start_y * 50))
     turtle.pendown()
-    turtle.pensize(2)
+    turtle.pensize(8)
     turtle.color("blue")
+    turtle.speed("slowest")
 
     for i in range(1, len(path)):
         x1, y1 = path[i-1]
